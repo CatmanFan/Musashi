@@ -442,10 +442,12 @@ typedef uint32 uint64;
 	#define CPU_TYPE_IS_010(A)         ((A) == CPU_TYPE_010)
 #define CPU_TYPE_IS_010_PLUS(A)    ((A) & (CPU_TYPE_010 | CPU_TYPE_EC020 | CPU_TYPE_020 | CPU_TYPE_EC030 | CPU_TYPE_030 | CPU_TYPE_040 | CPU_TYPE_EC040))
 #define CPU_TYPE_IS_010_LESS(A)    ((A) & (CPU_TYPE_000 | CPU_TYPE_008 | CPU_TYPE_010))
+	#define CPU_TYPE_IS_SCC070(A)         ((A) == CPU_TYPE_SCC070)
 #else
 	#define CPU_TYPE_IS_010(A)         0
 	#define CPU_TYPE_IS_010_PLUS(A)    CPU_TYPE_IS_EC020_PLUS(A)
 	#define CPU_TYPE_IS_010_LESS(A)    CPU_TYPE_IS_EC020_LESS(A)
+	#define CPU_TYPE_IS_SCC070(A)         0
 #endif
 
 #if M68K_EMULATE_020 || M68K_EMULATE_EC020
@@ -1772,6 +1774,48 @@ static inline void m68ki_stack_frame_1010(uint sr, uint vector, uint pc)
 	m68ki_push_16(sr);
 }
 
+/* Format 15 stack frame (68070).
+ * 68070 only.  This is the 17 word bus/address error frame.
+ */
+inline void m68ki_stack_frame_1111(uint pc, uint sr, uint vector)
+{
+	/* INTERNAL INFORMATION */
+	m68ki_fake_push_16();
+
+	/* INSTRUCTION INPUT BUFFER */
+	m68ki_push_16(0);
+
+	/* INSTRUCTION REGISTER */
+	m68ki_push_16(REG_IR);
+
+	/* DATA INPUT BUFFER */
+	m68ki_push_32(0);
+
+	/* FAULT ADDRESS */
+	m68ki_push_32(0);
+
+	/* DATA OUTPUT BUFFER */
+	m68ki_push_32(0);
+
+	/* INTERNAL INFORMATION */
+	m68ki_fake_push_32();
+
+	/* CURRENT MOVE MULTIPLE MASK */
+	m68ki_push_16(0);
+
+	/* SPECIAL STATUS WORD */
+	m68ki_push_16(0);
+
+	/* 1111, VECTOR OFFSET */
+	m68ki_push_16(0xf000 | (vector<<2));
+
+	/* PROGRAM COUNTER */
+	m68ki_push_32(pc);
+
+	/* STATUS REGISTER */
+	m68ki_push_16(sr);
+}
+
 /* Format B stack frame (long bus fault).
  * This is used only by 68020 for bus fault and address error
  * if the error happens during instruction execution.
@@ -2071,8 +2115,16 @@ static inline void m68ki_exception_address_error(void)
 	}
 	CPU_RUN_MODE = RUN_MODE_BERR_AERR_RESET_WSF;
 
-	/* Note: This is implemented for 68000 only! */
-	m68ki_stack_frame_buserr(sr);
+	if (CPU_TYPE_IS_SCC070(CPU_TYPE))
+	{
+		/* only the 68070 throws this unique type-1111 frame */
+		m68ki_stack_frame_1111(REG_PC, sr, EXCEPTION_BUS_ERROR);
+	}
+	else
+	{
+		/* Note: This is implemented for 68000 only! */
+		m68ki_stack_frame_buserr(sr);
+	}
 
 	m68ki_jump_vector(EXCEPTION_ADDRESS_ERROR);
 

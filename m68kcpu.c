@@ -38,8 +38,6 @@
 /* ================================ INCLUDES ============================== */
 /* ======================================================================== */
 
-extern void m68040_fpu_op0(void);
-extern void m68040_fpu_op1(void);
 extern void m68881_mmu_ops(void);
 extern unsigned char m68ki_cycles[][0x10000];
 extern void (*m68ki_instruction_jump_table[0x10000])(void); /* opcode handler jump table */
@@ -134,7 +132,7 @@ const uint m68ki_shift_32_table[65] =
 /* Number of clock cycles to use for exception processing.
  * I used 4 for any vectors that are undocumented for processing times.
  */
-const uint8 m68ki_exception_cycle_table[5][256] =
+const uint8 m68ki_exception_cycle_table[6][256] =
 {
 	{ /* 000 */
 		 40, /*  0: Reset - Initial Stack Pointer                      */
@@ -500,6 +498,79 @@ const uint8 m68ki_exception_cycle_table[5][256] =
 		  4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
 		  4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
 		  4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+	},
+	{ /* 070 - not even pretending to be correct */
+			40, /*  0: Reset - Initial Stack Pointer                      */
+			4, /*  1: Reset - Initial Program Counter                    */
+		126, /*  2: Bus Error                             (unemulated) */
+		126, /*  3: Address Error                         (unemulated) */
+			38, /*  4: Illegal Instruction                                */
+			44, /*  5: Divide by Zero                                     */
+			44, /*  6: CHK                                                */
+			34, /*  7: TRAPV                                              */
+			38, /*  8: Privilege Violation                                */
+			38, /*  9: Trace                                              */
+			4, /* 10: 1010                                               */
+			4, /* 11: 1111                                               */
+			4, /* 12: RESERVED                                           */
+			4, /* 13: Coprocessor Protocol Violation        (unemulated) */
+			4, /* 14: Format Error                                       */
+			44, /* 15: Uninitialized Interrupt                            */
+			4, /* 16: RESERVED                                           */
+			4, /* 17: RESERVED                                           */
+			4, /* 18: RESERVED                                           */
+			4, /* 19: RESERVED                                           */
+			4, /* 20: RESERVED                                           */
+			4, /* 21: RESERVED                                           */
+			4, /* 22: RESERVED                                           */
+			4, /* 23: RESERVED                                           */
+			46, /* 24: Spurious Interrupt                                 */
+			46, /* 25: Level 1 Interrupt Autovector                       */
+			46, /* 26: Level 2 Interrupt Autovector                       */
+			46, /* 27: Level 3 Interrupt Autovector                       */
+			46, /* 28: Level 4 Interrupt Autovector                       */
+			46, /* 29: Level 5 Interrupt Autovector                       */
+			46, /* 30: Level 6 Interrupt Autovector                       */
+			46, /* 31: Level 7 Interrupt Autovector                       */
+			38, /* 32: TRAP #0                                            */
+			38, /* 33: TRAP #1                                            */
+			38, /* 34: TRAP #2                                            */
+			38, /* 35: TRAP #3                                            */
+			38, /* 36: TRAP #4                                            */
+			38, /* 37: TRAP #5                                            */
+			38, /* 38: TRAP #6                                            */
+			38, /* 39: TRAP #7                                            */
+			38, /* 40: TRAP #8                                            */
+			38, /* 41: TRAP #9                                            */
+			38, /* 42: TRAP #10                                           */
+			38, /* 43: TRAP #11                                           */
+			38, /* 44: TRAP #12                                           */
+			38, /* 45: TRAP #13                                           */
+			38, /* 46: TRAP #14                                           */
+			38, /* 47: TRAP #15                                           */
+			4, /* 48: FP Branch or Set on Unknown Condition (unemulated) */
+			4, /* 49: FP Inexact Result                     (unemulated) */
+			4, /* 50: FP Divide by Zero                     (unemulated) */
+			4, /* 51: FP Underflow                          (unemulated) */
+			4, /* 52: FP Operand Error                      (unemulated) */
+			4, /* 53: FP Overflow                           (unemulated) */
+			4, /* 54: FP Signaling NAN                      (unemulated) */
+			4, /* 55: FP Unimplemented Data Type            (unemulated) */
+			4, /* 56: MMU Configuration Error               (unemulated) */
+			4, /* 57: MMU Illegal Operation Error           (unemulated) */
+			4, /* 58: MMU Access Level Violation Error      (unemulated) */
+			4, /* 59: RESERVED                                           */
+			4, /* 60: RESERVED                                           */
+			4, /* 61: RESERVED                                           */
+			4, /* 62: RESERVED                                           */
+			4, /* 63: RESERVED                                           */
+				/* 64-255: User Defined                                   */
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	}
 };
 
@@ -811,9 +882,21 @@ void m68k_set_cpu_type(unsigned int cpu_type)
 			HAS_PMMU	 = 0;
 			return;
 		case M68K_CPU_TYPE_SCC68070:
-			m68k_set_cpu_type(M68K_CPU_TYPE_68010);
-			CPU_ADDRESS_MASK = 0xffffffff;
 			CPU_TYPE         = CPU_TYPE_SCC070;
+			CPU_ADDRESS_MASK = 0xffffffff;
+			CPU_SR_MASK      = 0xa71f; /* T1 -- S  -- -- I2 I1 I0 -- -- -- X  N  Z  V  C  */
+			CYC_INSTRUCTION  = m68ki_cycles[1];
+			CYC_EXCEPTION    = m68ki_exception_cycle_table[5];
+			CYC_BCC_NOTAKE_B = 0;
+			CYC_BCC_NOTAKE_W = 0;
+			CYC_DBCC_F_NOEXP = 3;
+			CYC_DBCC_F_EXP   = 3;
+			CYC_SCC_R_TRUE   = 0;
+			CYC_MOVEM_W      = 7;
+			CYC_MOVEM_L      = 11;
+			CYC_SHIFT        = 3;
+			CYC_RESET        = 154;
+			HAS_PMMU	 = 0;
 			return;
 		case M68K_CPU_TYPE_68010:
 			CPU_TYPE         = CPU_TYPE_010;
